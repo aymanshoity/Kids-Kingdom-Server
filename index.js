@@ -1,15 +1,19 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(cors())
+const corsConfig = {
+    origin: '*',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+}
+app.use(cors(corsConfig))
 app.use(express.json())
 
-console.log(process.env.DB_USER)
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.je93mhd.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -23,15 +27,43 @@ const client = new MongoClient(uri, {
 });
 
 
-app.get('/', (req, res) => {
-    res.send('Kids-Kingdom is opening')
-})
+
 
 
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
+
+        const toysCollection = client.db("Kids-Kindom").collection("toys");
+
+        app.get('/', (req, res) => {
+            res.send('Kids-Kingdom is opening')
+        })
+
+        app.get('/toys', async (req, res) => {
+            const toys = await toysCollection.find().toArray()
+            res.send(toys)
+            console.log('hello')
+        })
+        app.get('/toys/:brand', async (req, res) => {
+            const brandName=req.params.brand
+            const query={brandName:brandName}
+            const toys = await toysCollection.find(query).toArray()
+            res.send(toys)
+            console.log('hello')
+        })
+        app.get('/toys/:brand/:id', async (req, res) => {
+            const id=req.params.id
+            const query={_id:new ObjectId(id)}
+            const toy = await toysCollection.findOne(query)
+            res.send(toy)
+        })
+
+
+
+
+
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
@@ -41,6 +73,7 @@ async function run() {
     }
 }
 run().catch(console.dir);
+
 
 
 
