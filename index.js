@@ -46,32 +46,55 @@ async function run() {
             const toys = await toysCollection.find().toArray()
             res.send(toys)
         })
+
+        app.post('/toys', async (req, res) => {
+            const toys = req.body;
+            const result = await toysCollection.insertOne(toys)
+            res.send(result)
+        })
         app.get('/toys/:brand', async (req, res) => {
-            const brandName=req.params.brand
-            const query={brandName:brandName}
+            const brandName = req.params.brand
+            const query = { brandName: brandName }
             const toys = await toysCollection.find(query).toArray()
             res.send(toys)
         })
+        
         app.get('/toys/:brand/:id', async (req, res) => {
-            const id=req.params.id
-            const query={_id:new ObjectId(id)}
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
             const toy = await toysCollection.findOne(query)
             res.send(toy)
         })
-        app.post('/toys',async(req,res)=>{
-            const toys=req.body;
-            const result=await toysCollection.insertOne(toys)
+        app.patch('/toys/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const existingProduct = req.body
+            const updatedProduct = {
+                $set: {
+
+                    brandName: existingProduct.brandName,
+                    brandLogo: existingProduct.brandLogo,
+                    productName: existingProduct.productName,
+                    productImage: existingProduct.productImage,
+                    price: existingProduct.price,
+                    ratings: existingProduct.ratings,
+                    type: existingProduct.type,
+                    productDetails: existingProduct.productDetails,
+                }
+            }
+            const toy = await toysCollection.updateOne(query, updatedProduct)
+            res.send(toy)
+        })
+        
+        app.post('/Cart', async (req, res) => {
+            const product = req.body;
+            const result = await productCollection.insertOne(product)
             res.send(result)
         })
-        app.post('/Cart',async(req,res)=>{
-            const product=req.body;
-            const result=await productCollection.insertOne(product)
-            res.send(result)
-        })
-        app.get('/Cart/:email',async(req,res)=>{
-            const email=req.params.email;
-            const query={ClientEmail: email}
-            const result=await productCollection.find(query).toArray()
+        app.get('/Cart/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { ClientEmail: email }
+            const result = await productCollection.find(query).toArray()
             res.send(result)
 
         })
