@@ -36,6 +36,7 @@ async function run() {
         await client.connect();
 
         const toysCollection = client.db("Kids-Kindom").collection("toys");
+        const productCollection = client.db("Kids-Kindom").collection("Cart");
 
         app.get('/', (req, res) => {
             res.send('Kids-Kingdom is opening')
@@ -44,20 +45,30 @@ async function run() {
         app.get('/toys', async (req, res) => {
             const toys = await toysCollection.find().toArray()
             res.send(toys)
-            console.log('hello')
         })
         app.get('/toys/:brand', async (req, res) => {
             const brandName=req.params.brand
             const query={brandName:brandName}
             const toys = await toysCollection.find(query).toArray()
             res.send(toys)
-            console.log('hello')
         })
         app.get('/toys/:brand/:id', async (req, res) => {
             const id=req.params.id
             const query={_id:new ObjectId(id)}
             const toy = await toysCollection.findOne(query)
             res.send(toy)
+        })
+        app.post('/Cart',async(req,res)=>{
+            const product=req.body;
+            const result=await productCollection.insertOne(product)
+            res.send(result)
+        })
+        app.get('/Cart/:email',async(req,res)=>{
+            const email=req.params.email;
+            const query={ClientEmail: email}
+            const result=await productCollection.find(query).toArray()
+            res.send(result)
+
         })
 
 
